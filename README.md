@@ -7,3 +7,6 @@
 ![Screenshot 2025-04-04 112311](https://github.com/user-attachments/assets/3534fbc5-8aa2-4608-88a2-5cf9071be6ac)
 ![Screenshot 2025-04-04 112349](https://github.com/user-attachments/assets/8cf8b2dc-811d-4bd4-af5e-dbb0a65db48c)
 ![Screenshot 2025-03-28 142803](https://github.com/user-attachments/assets/c6ccae71-273b-4cf8-ac10-c8261eb5df6c)
+
+JWT TOKEN=uDk93!a7Gx4Mn9!KwP6rYv02RzLxQ1Fe
+
