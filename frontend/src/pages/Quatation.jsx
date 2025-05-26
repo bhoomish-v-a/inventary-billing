@@ -2,6 +2,32 @@ import React, { useState, useEffect, useMemo } from "react";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
 import AdminPanel from "./AdminPanel";
+import Select from "react-select";
+
+
+const customStyles = {
+  control: (base) => ({
+    ...base,
+    backgroundColor: 'white',  // Set background color
+    borderColor: '#ccc',       // Border color
+    borderRadius: '4px',
+    padding: '5px',
+    color: '#000',             // Text color
+  }),
+  option: (base) => ({
+    ...base,
+    color: 'black',  // Ensure text color inside options
+  }),
+  singleValue: (base) => ({
+    ...base,
+    color: 'black',  // Ensure selected value text color
+  }),
+  menu: (base) => ({
+    ...base,
+    backgroundColor: 'white', // Background for the dropdown
+  }),
+};
+
 
 const QuotationForm = () => {
  
@@ -277,7 +303,7 @@ const QuotationForm = () => {
   return (
      <AdminPanel>
     <div className="container mt-4">
-      <h2 className="mb-4">Generate Quotation</h2>
+      <h2 className="mb-4">Quotation </h2>
       
       {error && <div className="alert alert-danger">{error}</div>}
       
@@ -288,113 +314,128 @@ const QuotationForm = () => {
               <h4>Customer Details</h4>
               
               {manualCustomer ? (
-                <>
-                  <div className="mb-3">
-                    <label className="form-label">Customer Name</label>
-                    <input 
-                      className="form-control" 
-                      value={quotation.customerName}
-                      onChange={(e) => setQuotation({...quotation, customerName: e.target.value})}
-                      required
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Address</label>
-                    <input 
-                      className="form-control" 
-                      value={quotation.address}
-                      onChange={(e) => setQuotation({...quotation, address: e.target.value})}
-                    />
-                  </div>
-                  <div className="mb-3">
-                    <label className="form-label">Phone</label>
-                    <input 
-                      className="form-control" 
-                      value={quotation.phone}
-                      onChange={(e) => setQuotation({...quotation, phone: e.target.value})}
-                    />
-                  </div>
-                </>
+  <>
+    <div className="mb-3">
+      <label className="form-label">Customer Name</label>
+      <input 
+        className="form-control" 
+        value={quotation.customerName}
+        onChange={(e) => setQuotation({...quotation, customerName: e.target.value})}
+        required
+      />
+    </div>
+    <div className="mb-3">
+      <label className="form-label">Address</label>
+      <input 
+        className="form-control" 
+        value={quotation.address}
+        onChange={(e) => setQuotation({...quotation, address: e.target.value})}
+      />
+    </div>
+    <div className="mb-3">
+      <label className="form-label">Phone</label>
+      <input 
+        className="form-control" 
+        value={quotation.phone}
+        onChange={(e) => setQuotation({...quotation, phone: e.target.value})}
+      />
+    </div>
+
+    <button 
+      type="button" 
+      className="btn btn-outline-secondary" 
+      onClick={() => setManualCustomer(false)}
+    >
+      Select Existing Customer
+    </button>
+  </>
               ) : (
                 <>
-                  <div className="mb-3">
-                    <label className="form-label">Search Customer</label>
-                    <input 
-                      className="form-control" 
-                      placeholder="Search Customer" 
-                      value={customerSearch} 
-                      onChange={(e) => {
-                        setCustomerSearch(e.target.value); 
-                        setShowAllCustomers(true);
-                      }} 
-                      onFocus={() => setShowAllCustomers(true)}
-                      required
-                    />
-                  </div>
-                  
-                  {showAllCustomers && (
-                    <div className="mb-3">
-                      <ul className="list-group" style={{maxHeight: "200px", overflowY: "auto"}}>
-                        {filteredCustomers.length > 0 ? (
-                          filteredCustomers.map(customer => (
-                            <li 
-                              key={customer.customerName || Math.random()} 
-                              className="list-group-item list-group-item-action" 
-                              onClick={() => handleCustomerSelect(customer)}
-                              style={{cursor: "pointer"}}
-                            >
-                              {customer.customerName || "Unnamed Customer"}
-                            </li>
-                          ))
-                        ) : (
-                          <li className="list-group-item text-muted">No customers found</li>
-                        )}
-                      </ul>
-                    </div>
-                  )}
-                  
-                  <button 
-                    type="button" 
-                    className="btn btn-secondary" 
-                    onClick={handleManualCustomer}
-                  >
-                    Enter Customer Manually
-                  </button>
-                </>
+  <div className="mb-3">
+    <label className="form-label">Select Customer</label>
+    <select
+      className="form-select"
+      value={quotation.customerName}
+      onChange={(e) => {
+        const selectedCustomer = customers.find(c => c.customerName === e.target.value);
+        handleCustomerSelect(selectedCustomer);
+      }}
+      required
+    >
+      <option value="">-- Select Customer --</option>
+      {customers.map((customer, index) => (
+        <option key={index} value={customer.customerName}>
+          {customer.customerName}
+        </option>
+      ))}
+    </select>
+  </div>
+
+
+  <button 
+    type="button" 
+    className="btn btn-secondary" 
+    onClick={handleManualCustomer}
+  >
+    Enter Customer Manually
+  </button>
+</>
+
               )}
             </div>
             
+           
+
             <div className="card p-3">
-              <h4>Add Products</h4>
-              
-              <div className="mb-3">
-                <label className="form-label">Search Product</label>
-                <input 
-                  className="form-control mb-2" 
-                  placeholder="Search Product"
-                  value={productSearch}
-                  onChange={(e) => setProductSearch(e.target.value)}
-                />
-                
-                <select 
-                  className="form-select" 
-                  onChange={handleProductChange} 
-                  value={selectedProduct}
-                >
-                  <option value="">Select Product</option>
-                  {filteredProducts.map((product) => (
-                    <option key={product.productId || Math.random()} value={product.productId}>
-                      {product.productId || "Unnamed Product"}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
+      <h4>Add Products</h4>
+
+      <div className="mb-3">
+        <label className="form-label">Search Product</label>
+        <Select
+  options={filteredProducts.map(product => ({
+    value: product.productId,
+    label: product.productId || "Unnamed Product", // Ensure label is set
+  }))}
+  onChange={(selectedOption) => {
+    if (!selectedOption) return;
+
+    const product = products.find((p) => p.productId === selectedOption.value);
+
+    if (product && !quotation.items.some((item) => item.productId === product.productId)) {
+      setQuotation({
+        ...quotation,
+        items: [
+          ...quotation.items,
+          {
+            productId: product.productId || '',
+            productName: product.productId , // Default value
+            size: '',
+            quantity: 1,
+            price: 0,
+            cost: 0,
+            sizes: product.sizes || [],
+          },
+        ],
+      });
+    }
+  }}
+  placeholder="Type to search products..."
+  isClearable
+  styles={{
+    ...customStyles,
+    singleValue: (base) => ({
+      ...base,
+      color: '#000', // Ensure text is visible
+    }),
+  }}
+/>
+      </div>
+    </div>
+
           </div>
-          
           <div className="col-md-6">
             <div className="card p-3">
-              <h3 className="mb-3">Quotation Details</h3>
+              <h3 className="mb-3">Quotation  Details</h3>
               
               <div className="mb-3">
                 <label className="form-label">Date</label>
@@ -472,7 +513,7 @@ const QuotationForm = () => {
               </div>
               
               <h3 className="mt-3 text-end">
-                Grand Total: ${calculateGrandTotal().toFixed(2)}
+                Grand Total: ₹ {calculateGrandTotal().toFixed(2)}
               </h3>
               
               <div className="d-flex justify-content-end mt-3">

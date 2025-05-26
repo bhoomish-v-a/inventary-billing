@@ -1,43 +1,61 @@
 const express = require("express");
 const Product = require("../models/product");
-
+const multer = require("multer");
+const path = require("path");
 const router = express.Router();
 
 // Add Product
-router.post("/", async (req, res) => {
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => {
+      cb(null, "images/"); // Your images directory
+    },
+    filename: (req, file, cb) => {
+      const productId = req.body.productId.replace(/\s+/g, "_").toLowerCase();
+      const ext = path.extname(file.originalname);
+      cb(null, `${productId}${ext}`);
+    },
+  });
+  
+  const upload = multer({ storage });
+  
+  router.post("/", upload.single("image"), async (req, res) => {
     try {
-        const { productId, hsnCode, gst, sizes } = req.body;
-
-        // Validation: Check if all fields are provided
-        if (!productId || !hsnCode || !gst || !sizes || !sizes.length) {
-            return res.status(400).json({ message: "⚠️ All fields are required!" });
-        }
-
-        // Validate GST Percentage (0 - 100)
-        if (gst < 0 || gst > 100) {
-            return res.status(400).json({ message: "⚠️ GST must be between 0% and 100%!" });
-        }
-
-        // Validate HSN Code (6-digit numeric)
-        if (!/^\d{6}$/.test(hsnCode)) {
-            return res.status(400).json({ message: "⚠️ HSN Code must be exactly 6 digits!" });
-        }
-
-        // Check if product already exists
-        const existingProduct = await Product.findOne({ productId });
-        if (existingProduct) {
-            return res.status(400).json({ message: "⚠️ Product already exists!" });
-        }
-
-        // Create new product
-        const newProduct = new Product({ productId, hsnCode, gst, sizes });
-        await newProduct.save();
-
-        res.json({ message: "✅ Product added successfully!" });
+      const { productId, hsnCode, gst, sizes } = req.body;
+  
+      if (!productId || !hsnCode || !gst || !sizes) {
+        return res.status(400).json({ message: "⚠️ All fields are required!" });
+      }
+  
+      if (gst < 0 || gst > 100) {
+        return res.status(400).json({ message: "⚠️ GST must be between 0% and 100%!" });
+      }
+  
+      if (!/^\d{6}$/.test(hsnCode)) {
+        return res.status(400).json({ message: "⚠️ HSN Code must be exactly 6 digits!" });
+      }
+  
+      const existingProduct = await Product.findOne({ productId });
+      if (existingProduct) {
+        return res.status(400).json({ message: "⚠️ Product already exists!" });
+      }
+  
+      const newProduct = new Product({
+        productId,
+        hsnCode,
+        gst,
+        sizes: JSON.parse(sizes), // Parsing JSON string to object
+        image: req.file.filename, // Save only filename
+      });
+  
+      await newProduct.save();
+  
+      res.json({ message: "✅ Product added successfully!" });
     } catch (error) {
-        res.status(500).json({ message: "❌ Server error! Please try again.", error: error.message });
+      console.error(error);
+      res.status(500).json({ message: "❌ Server error! Please try again.", error: error.message });
     }
-});
+  });
+  
 
 // Get All Products
 router.get("/", async (req, res) => {

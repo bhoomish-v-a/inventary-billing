@@ -11,11 +11,16 @@ import Quotation from "./pages/Quatation";
 import UpdateProduct from "./pages/UpdateProduct";
 import PlaceOrder from "./pages/placeOrder";
 import Inventary from "./pages/inventary";
+import Bill from "./pages/BillForm";
+import Report from "./pages/ReportPage";
+
+
 
 const App = () => {
   return (
     <Router>
       <Routes>
+        
         <Route path="/" element={<Login />} />
         <Route path="/admin" element={<ProtectedRoute allowedRole="admin"><AdminDashboard /></ProtectedRoute>} />
         <Route path="/executive" element={<ProtectedRoute allowedRole="executive"><ExecutiveDashboard /></ProtectedRoute>} />
@@ -27,6 +32,8 @@ const App = () => {
         <Route path="/admin/update-product" element={<UpdateProduct />} />
         <Route path="/admin/placeOrder" element={<PlaceOrder />} />
         <Route path="/admin/inventory" element={<Inventary />} />
+        <Route path="/admin/bill" element={<Bill/>} />
+        <Route path="/admin/report" element={<Report/>} />
 
       </Routes>
     </Router>

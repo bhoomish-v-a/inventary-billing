@@ -10,14 +10,18 @@ const AddProduct = () => {
     gst: "",
     sizes: [],
   });
-
   const [sizeInput, setSizeInput] = useState({ size: "", rate: "", quantity: "" });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const [image, setImage] = useState(null); // <-- NEW image state
 
   const handleChange = (e) => {
     setProduct({ ...product, [e.target.name]: e.target.value });
-    setError(""); // Clear error when user types
+    setError("");
+  };
+
+  const handleImageChange = (e) => {
+    setImage(e.target.files[0]); // set image
   };
 
   const validateGst = () => {
@@ -43,7 +47,7 @@ const AddProduct = () => {
     }
     setProduct({ ...product, sizes: [...product.sizes, sizeInput] });
     setSizeInput({ size: "", rate: "", quantity: "" });
-    setError(""); // Clear error
+    setError("");
   };
 
   const removeSize = (index) => {
@@ -52,18 +56,34 @@ const AddProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(""); 
+    setMessage("");
     setError("");
 
-    if (!validateGst() || !validateHsn()) return; // Stop submission if validation fails
+    if (!validateGst() || !validateHsn()) return;
+
+    if (!image) {
+      setError("⚠️ Please select an image!");
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append("productId", product.productId);
+    formData.append("hsnCode", product.hsnCode);
+    formData.append("gst", product.gst);
+    formData.append("sizes", JSON.stringify(product.sizes)); // Convert array to string
+    formData.append("image", image); // append image
 
     try {
-      const response = await axios.post("http://localhost:3001/products", product);
+      const response = await axios.post("http://localhost:3001/products", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+
       setMessage(`${response.data.message}`);
       setProduct({ productId: "", hsnCode: "", gst: "", sizes: [] });
+      setImage(null);
     } catch (error) {
       if (error.response && error.response.status === 400) {
-        setError(`⚠️ ${error.response.data.message}`); // Show user-friendly error
+        setError(`⚠️ ${error.response.data.message}`);
       } else {
         setError("❌ Server error! Please try again.");
       }
@@ -76,11 +96,12 @@ const AddProduct = () => {
         <Row className="justify-content-md-center">
           <Col md={6}>
             <h2 className="mt-4">Add New Product</h2>
-            
+
             {error && <Alert variant="danger">{error}</Alert>}
             {message && <Alert variant="success">{message}</Alert>}
 
-            <Form onSubmit={handleSubmit}>
+            <Form onSubmit={handleSubmit} encType="multipart/form-data">
+              {/* Product ID, HSN, GST Same */}
               <Form.Group className="mb-3">
                 <Form.Label>Product ID</Form.Label>
                 <Form.Control
@@ -116,6 +137,7 @@ const AddProduct = () => {
                 />
               </Form.Group>
 
+              {/* Size Input Same */}
               <Form.Group className="mb-3">
                 <Form.Label>Size, Price & Quantity</Form.Label>
                 <div className="d-flex">
@@ -149,6 +171,17 @@ const AddProduct = () => {
                     </p>
                   ))}
                 </div>
+              </Form.Group>
+
+              {/* NEW Image Upload Field */}
+              <Form.Group className="mb-3">
+                <Form.Label>Product Image</Form.Label>
+                <Form.Control
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  required
+                />
               </Form.Group>
 
               <Button variant="primary" type="submit">Add Product</Button>

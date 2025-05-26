@@ -1,17 +1,24 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
+import "bootstrap/dist/css/bootstrap.min.css";
+import AdminPanel from "./AdminPanel";
 
 const ProductList = () => {
   const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const serverUrl = "http://localhost:3001";
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get("http://localhost:3001/products");
+        const response = await axios.get(`${serverUrl}/products`);
         setProducts(response.data);
       } catch (error) {
         console.error("Error fetching products", error);
+      } finally {
+        setLoading(false);
       }
     };
     fetchProducts();
@@ -21,70 +28,100 @@ const ProductList = () => {
     product.productId.toLowerCase().includes(search.toLowerCase())
   );
 
+  const handleImageError = (e) => {
+    e.target.onerror = null; // To avoid infinite loop
+    e.target.src = `${serverUrl}/images/default.png`; // Set default image properly
+  };
+
   return (
-    <div className="p-6 max-w-6xl mx-auto">
-      <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">Product List</h1>
-      <div className="mb-6 flex justify-center">
-        <input
-          type="text"
-          placeholder="Search by Product Name..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full md:w-1/2 p-3 border rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 transition duration-300"
-        />
-      </div>
-      
-      {filteredProducts.length > 0 ? (
-        <div className="overflow-x-auto bg-white rounded-lg shadow border border-gray-200">
-          <table className="min-w-full divide-y divide-gray-200 border-collapse border border-gray-300">
-            <thead className="bg-blue-100">
-              <tr>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider border border-gray-300">Product ID</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider border border-gray-300">HSN Code</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider border border-gray-300">GST %</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider border border-gray-300">Sizes</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider border border-gray-300">Prices</th>
-                <th className="px-6 py-3 text-left text-sm font-semibold text-gray-700 uppercase tracking-wider border border-gray-300">Stock</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredProducts.map((product, index) => (
-                <tr key={product.productId} className={index % 2 === 0 ? "bg-gray-50" : "bg-white"}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 border border-gray-300">{product.productId}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border border-gray-300">{product.hsnCode}</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border border-gray-300">{product.gst}%</td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border border-gray-300">
-                    <ul className="space-y-1">
-                      {product.sizes.map((size, index) => (
-                        <li key={index}>{size.size}</li>
-                      ))}
-                    </ul>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border border-gray-300">
-                    <ul className="space-y-1">
-                      {product.sizes.map((size, index) => (
-                        <li key={index} className="font-semibold">₹{size.rate}</li>
-                      ))}
-                    </ul>
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 border border-gray-300">
-                    <ul className="space-y-1">
-                      {product.sizes.map((size, index) => (
-                        <li key={index} className={size.quantity > 0 ? "text-green-600" : "text-red-500"}>{size.quantity}</li>
-                      ))}
-                    </ul>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+    <AdminPanel>
+      <div className="container mt-5">
+        <div className="text-center mb-4">
+          <h1 className="fw-bold text-primary">Product Inventory</h1>
         </div>
-      ) : (
-        <p className="text-center text-gray-500 text-lg py-10">No products found.</p>
-      )}
-    </div>
+
+        <div className="d-flex justify-content-center mb-3">
+          <input
+            type="text"
+            placeholder="Search products..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="form-control w-50 shadow-sm"
+          />
+        </div>
+
+        {loading ? (
+          <div className="text-center">
+            <div className="spinner-border text-primary" role="status">
+              <span className="visually-hidden">Loading...</span>
+            </div>
+          </div>
+        ) : filteredProducts.length > 0 ? (
+          <div className="table-responsive shadow-sm">
+            <table className="table table-bordered table-hover align-middle">
+              <thead className="table-dark">
+                <tr>
+                  <th>Image</th>
+                  <th>Product ID</th>
+                  <th>HSN Code</th>
+                  <th>GST %</th>
+                  <th>Sizes</th>
+                  <th>Prices</th>
+                  <th>Stock</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredProducts.map((product, index) => (
+                  <tr key={product.productId} className={index % 2 === 0 ? "table-light" : "table-white"}>
+                    <td>
+                      <img
+                        src={`http://localhost:3001/images/${product.image}`}
+                        alt={product.productId}
+                        style={{ width: "80px", height: "80px", objectFit: "cover", borderRadius: "10px" }}
+                        onError={(e) => {
+                          e.target.onerror = null; 
+                          e.target.src = "http://localhost:3001/images/default.png"; 
+                        }}
+                      />
+                    </td>
+
+                    <td className="fw-bold text-primary">{product.productId}</td>
+                    <td>{product.hsnCode}</td>
+                    <td>{product.gst}%</td>
+                    <td>
+                      <ul className="list-unstyled">
+                        {product.sizes.map((size, idx) => (
+                          <li key={idx}>{size.size}</li>
+                        ))}
+                      </ul>
+                    </td>
+                    <td>
+                      <ul className="list-unstyled fw-bold">
+                        {product.sizes.map((size, idx) => (
+                          <li key={idx}>₹{size.rate}</li>
+                        ))}
+                      </ul>
+                    </td>
+                    <td>
+                      <ul className="list-unstyled">
+                        {product.sizes.map((size, idx) => (
+                          <li key={idx} className={size.quantity > 0 ? "text-success fw-bold" : "text-danger fw-bold"}>
+                            {size.quantity}
+                          </li>
+                        ))}
+                      </ul>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <p className="text-center text-danger fw-bold">No products found.</p>
+        )}
+      </div>
+    </AdminPanel>
   );
 };
 
 export default ProductList;
-

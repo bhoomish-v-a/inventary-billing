@@ -12,6 +12,7 @@ const productSchema = new mongoose.Schema(
         quantity: { type: Number, required: true }, // Stock per size
       },
     ],
+    image: { type: String, required: true }, // <-- New field to store the image filename
   },
   { timestamps: true }
 );

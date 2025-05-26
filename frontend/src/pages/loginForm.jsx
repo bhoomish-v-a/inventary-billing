@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
 import "bootstrap/dist/css/bootstrap.min.css";
+import "./Login.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -20,22 +21,22 @@ const Login = () => {
         password,
         role,
       });
-    
-      console.log("Server Response:", response.data); // Check full response
-    
+
+      console.log("Server Response:", response.data);
+
       if (!response.data || !response.data.role) {
         console.log("No role received!");
         return;
       }
-    
+
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("userRole", response.data.role);
-    
+
       setMessage({ text: response.data.message, type: "success" });
-    
+
       setTimeout(() => {
-        console.log("Navigating to:", response.data.role); // Should print role before redirect
-    
+        console.log("Navigating to:", response.data.role);
+
         if (response.data.role === "admin") {
           console.log("Redirecting to /admin");
           navigate("/admin");
@@ -48,13 +49,21 @@ const Login = () => {
       console.error("Login error:", error.response?.data || error);
       setMessage({ text: error.response?.data?.message || "Login failed", type: "danger" });
     }
-    
   };
 
   return (
-    <div className="d-flex justify-content-center align-items-center vh-100 bg-light">
-      <div className="card p-4 shadow" style={{ width: "350px" }}>
-        <h3 className="text-center mb-3">Login</h3>
+    <div className="login-container">
+      {/* Background Video */}
+      <div className="video-container">
+        <video autoPlay loop muted>
+          <source src="/assets/inventory-animation.mp4" type="video/mp4" />
+        </video>
+      </div>
+
+      <div className="card p-4 shadow login-card">
+        <h2>🏆 Tiruppur Trophy 🏆</h2>
+        <p className="text-muted">Address: 123, Main Street, Tiruppur</p>
+
         {message && <div className={`alert alert-${message.type}`}>{message.text}</div>}
 
         <form onSubmit={handleSubmit}>

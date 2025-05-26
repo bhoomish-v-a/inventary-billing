@@ -115,7 +115,7 @@ const UpdateProduct = () => {
               <Form.Label>Select Action</Form.Label>
               <Form.Select value={action} onChange={(e) => setAction(e.target.value)}>
                 <option value="">Choose an action</option>
-                <option value="updatePrice">Update Price & GST</option>
+                <option value="updatePrice">Update Price</option>
                 <option value="updateStock">Update Stock Quantity</option>
                 <option value="addSize">Add New Size</option>
               </Form.Select>

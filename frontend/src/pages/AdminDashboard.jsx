@@ -56,6 +56,24 @@ const AdminDashboard = () => {
             </Card.Body>
           </Card>
         </Col>
+        <Col md={4}>
+          <Card className="shadow-sm">
+            <Card.Body>
+              <Card.Title>Billing</Card.Title>
+              <Card.Text>Gendrate a bill</Card.Text>
+              <Button variant="primary" as={Link} to="/admin/bill">Quotation</Button>
+            </Card.Body>
+          </Card>
+        </Col>
+        <Col md={4}>
+          <Card className="shadow-sm">
+            <Card.Body>
+              <Card.Title>Report</Card.Title>
+              <Card.Text>Analyize the report</Card.Text>
+              <Button variant="primary" as={Link} to="/admin/report">Report</Button>
+            </Card.Body>
+          </Card>
+        </Col>
       </Row>
     </AdminPanel>
   );
